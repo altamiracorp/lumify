@@ -49,7 +49,7 @@
 
 *as root:*
 
-        yum install -y git nodejs npm
+        yum --enablerepo centosplus install -y git nodejs npm
 
         npm install -g bower
         npm install -g inherits
