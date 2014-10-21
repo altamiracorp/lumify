@@ -83,7 +83,7 @@ public class VertexEdges extends BaseRequestHandler {
             result.getRelationships().add(clientApiEdge);
             referencesAdded++;
         }
-        result.setTotalReferences(totalReferences);
+        result.setTotalReferences(referencesAdded);
 
         respondWithClientApiObject(response, result);
     }
