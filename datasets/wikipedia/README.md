@@ -6,7 +6,7 @@
 
 1. Compress wikipedia owl folder and import the same way as the dev.owl
         
-        <lumify dir>/datasets/wikipedia/data/ontology
+        <lumify working dir>/datasets/wikipedia/data/ontology
 
 1. Run within your IDE
 
