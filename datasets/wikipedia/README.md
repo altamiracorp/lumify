@@ -15,8 +15,6 @@
         Working directory:          <lumify working dir>/datasets/wikipedia/data
         Use classpath of module:    lumify-wikipedia-mr
 
-1. [Re-index the data](https://github.com/lumifyio/lumify/tree/develop/tools/reindex-mr)
-
 ## Wikipedia Import via Map Reduce
 
 1. Build the jar:
