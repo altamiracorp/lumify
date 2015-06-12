@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>lumify</artifactId>
     <groupId>io.lumify</groupId>
-    <version>0.4.1</version>
+    <version>0.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Lumify</name>
 
@@ -22,15 +22,15 @@
     <url>https://github.com/lumifyio/lumify</url>
     <licenses>
         <license>
-            <name>The Apache Software License, Veresion 2.0</name>
+            <name>The Apache Software License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <modules>
-        <module>build-tools</module>
         <module>core</module>
+        <module>data-mapping</module>
         <module>datasets</module>
         <module>examples</module>
         <module>graph-property-worker</module>
@@ -38,6 +38,7 @@
         <module>web</module>
         <module>dev</module>
         <module>integration-test</module>
+        <module>benchmark</module>
         <module>migrations</module>
     </modules>
 
@@ -51,10 +52,13 @@
         <maven.build.timestamp.format>EEE MMM dd HH:mm z yyyy</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <test.memSettings>-Xmx4096m -XX:MaxPermSize=1024m</test.memSettings>
+        <!-- Skip Integration Tests by default -->
+        <skipITs>true</skipITs>
 
         <!-- Dependency Versions -->
         <accumulo.version>1.6.1</accumulo.version>
-        <altamira.bigtable.version>0.5.1-SNAPSHOT</altamira.bigtable.version>
+        <altamira.bigtable.version>0.5.0</altamira.bigtable.version>
         <miniweb.version>0.5.1</miniweb.version>
         <ant.version>1.4.1</ant.version>
         <atmosphere.version>2.2.3</atmosphere.version>
@@ -81,6 +85,7 @@
         <jetty.javaee.version>3.0.0.v201112011016</jetty.javaee.version>
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         <json.version>20131018</json.version>
+        <lumify.build-tools.version>1.0</lumify.build-tools.version>
         <kryo.version>2.17</kryo.version>
         <lesscss.version>1.3.3</lesscss.version>
         <log4j.version>1.2.17</log4j.version>
@@ -96,6 +101,7 @@
         <guava.version>13.0</guava.version>
         <xerces.version>2.9.1</xerces.version>
         <xalan.version>2.7.1</xalan.version>
+        <clavin.version>2.0.0</clavin.version>
 
         <!-- update monthly -->
         <uadetector.resources.version>2014.06</uadetector.resources.version>
@@ -113,6 +119,7 @@
         <plugin.doxia.markdown.version>1.5</plugin.doxia.markdown.version>
         <plugin.findbugs.version>2.5.3</plugin.findbugs.version>
         <plugin.findbugs.findsecbugs.version>1.1.0</plugin.findbugs.findsecbugs.version>
+        <plugin.jacoco.version>0.7.4.201502262128</plugin.jacoco.version>
         <plugin.jetty.version>${jetty.version}</plugin.jetty.version>
         <plugin.maven.assembly.version>2.4</plugin.maven.assembly.version>
         <plugin.maven.clean.version>2.5</plugin.maven.clean.version>
@@ -141,7 +148,7 @@
         </repository>
         <snapshotRepository>
             <id>bits.lumify.io.snapshots</id>
-            <url>https://bits.lumify.io/nexus/content/repositories/releases</url>
+            <url>https://bits.lumify.io/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
         <site>
             <id>temp-site</id>
@@ -726,31 +733,80 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${plugin.maven.surefire.version}</version>
                         <configuration>
-                            <skipTests>true</skipTests>
+                            <argLine>${test.memSettings} ${argLine}</argLine>
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${plugin.maven.exec.version}</version>
-                        <inherited>false</inherited>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <argLine>${test.memSettings} ${argLine}</argLine>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>test-coverage</id>
-                                <phase>test</phase>
+                                <id>prepare-agent</id>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>prepare-integration-agent</id>
+                                <goals>
+                                    <goal>prepare-agent-integration</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>integration-report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report-integration</goal>
+                                </goals>
+                            </execution>
+                            <!-- Turn on to fail build at specified coverage threshold. -->
+                            <!--
+                            <execution>
+                                <id>default-check</id>
+                                <goals>
+                                    <goal>check</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>bin/testCoverage.sh</executable>
+                                    <rules>
+                                        <rule>
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                                <limit>
+                                                    <counter>COMPLEXITY</counter>
+                                                    <value>COVEREDRATIO</value>
+                                                    <minimum>0.60</minimum>
+                                                </limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
                                 </configuration>
                             </execution>
+                            -->
                         </executions>
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>ITest</id>
+            <properties>
+                <skipITs>false</skipITs>
+            </properties>
         </profile>
     </profiles>
 
@@ -762,20 +818,29 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${plugin.maven.surefire.version}</version>
                     <configuration>
-                        <argLine>-Xmx4096m -XX:MaxPermSize=1024m</argLine>
+                        <argLine>${test.memSettings}</argLine>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.18.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <argLine>${test.memSettings}</argLine>
                         <excludes>
                             <exclude>**/*$*</exclude>
-                            <exclude>**/*IntegrationTest.java</exclude>
-                            <exclude>**/*BenchmarkTest.java</exclude>
                         </excludes>
+                        <reuseForks>false</reuseForks>
+                        <skipTests>${skipIts}</skipTests>
                     </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                            <version>${plugin.maven.surefire.version}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
 
                 <plugin>
@@ -946,9 +1011,15 @@
                         <dependency>
                             <groupId>io.lumify</groupId>
                             <artifactId>lumify-build-tools</artifactId>
-                            <version>${project.version}</version>
+                            <version>${lumify.build-tools.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${plugin.jacoco.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -961,6 +1032,10 @@
             <plugin>
                 <groupId>com.shankyank.mojo</groupId>
                 <artifactId>template-resgen-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
