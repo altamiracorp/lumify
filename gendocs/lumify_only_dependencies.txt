@@ -141,7 +141,7 @@ Building Lumify: Data Mapping 0.5.0-SNAPSHOT
 --- maven-dependency-plugin:2.8:tree (default-cli) @ lumify-data-mapping-group ---
 io.lumify:lumify-data-mapping-group:pom:0.5.0-SNAPSHOT
 
-Building Lumify: Data Mapping: Core 0.5.0-SNAPSHOT
+Building Lumify: Data Mapping: 	Core 0.5.0-SNAPSHOT
 --- maven-dependency-plugin:2.8:tree (default-cli) @ lumify-data-mapping-core ---
 io.lumify:lumify-data-mapping-core:jar:0.5.0-SNAPSHOT
 +- io.lumify:lumify-core:jar:0.5.0-SNAPSHOT:compile
