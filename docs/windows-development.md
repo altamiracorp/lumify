@@ -86,3 +86,46 @@
 
         cd /c/Users/{your user name}/lumify
         mvn package
+
+1. The Lumify web app has a deep file path, but Windows has a file path maximum limit (MAX_PATH) of 260 characters (see https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx). Therefore, avoid the problem using the next five steps. Share the following folder with yourself (i.e., owner)
+
+          %USERPROFILE%\lumify\docker\dev\lumify-dev-persistent
+
+1. Run the following command:
+
+          net use L: "\\%COMPUTERNAME%\Users\%USERNAME%\lumify\docker\dev\lumify-dev-persistent" /persistent:yes
+
+1. Create the following folder:
+
+          L:\tmp\root\webapp
+
+1. Using 7-Zip or suitable utility, extract the file 
+
+          %USERPROFILE%\lumify\docker\dev\lumify-dev-persistent\opt\jetty\webapps\root.war 
+     
+     to 
+
+          L:\tmp\root\webapp
+
+1. In %USERPROFILE%\lumify\docker\dev\lumify-dev-persistent\opt\jetty\webapps, create the file root.xml containing the following:
+
+          <Configure class="org.eclipse.jetty.webapp.WebAppContext">
+          
+            <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+            <!-- Required minimal context configuration :                        -->
+            <!--  + contextPath                                                  -->
+            <!--  + war OR resourceBase                                          -->
+            <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+            <Set name="contextPath">/</Set>
+            <Set name="war"><Property name="jetty.webapps" default="."/>/root.war</Set>
+          
+            <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+            <!-- Optional context configuration                                  -->
+            <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+            <Set name="tempDirectory">/tmp/root</Set>
+            <Set name="extractWAR">true</Set>
+            <Set name="PersistTempDirectory">true</Set>
+            <Set name="copyWebDir">false</Set>
+            <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+          
+          </Configure>
