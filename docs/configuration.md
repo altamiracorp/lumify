@@ -20,8 +20,8 @@ By default Lumify will use `io.lumify.core.config.FileConfigurationLoader` to lo
 * `${user.home}/.lumify`
 * Directory specified by the environment variable `LUMIFY_DIR`
 
-Each of these directories will be searched in order and all files with a `.properties` extension will be
-read in alphabetic order. This allows you to override properties in various places.
+The config directory of each of these directories will be searched in order and all files with a `.properties` extension 
+will be read in alphabetic order. This allows you to override properties in various places.
 
 ## Docker
 
