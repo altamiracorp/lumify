@@ -32,7 +32,10 @@ To format your dev image, you can run the format script.
       _NOTE: Requires Oracle JDK._
 
         mvn package -P web-war -pl web/war -am -DskipTests -Dsource.skip=true
-
+        ## if you get bower ESUDO error you need to create a ~/.bowerrc in the root folder and add this code 
+        ##{
+                allow-root:true
+        }
 1. Copy the war file:
 
         cp web/war/target/lumify-web-war*.war \
